@@ -288,21 +288,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-### Web ###
-*.asp
-*.cer
-*.csr
-*.css
-*.htm
-*.html
-*.js
-*.jsp
-*.php
-*.rss
-*.wasm
-*.wat
-*.xhtml
-
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -326,3 +311,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/web,kicad,linux,macos,python,archive,windows,angular,archives,jupyternotebooks
+
+!classification/data/
+classification/data/*
+!classification/data/get_data.sh
+!classification/data/README.md
