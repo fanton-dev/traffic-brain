@@ -316,3 +316,5 @@ $RECYCLE.BIN/
 classification/data/*
 !classification/data/get_data.sh
 !classification/data/README.md
+.vscode
+env
