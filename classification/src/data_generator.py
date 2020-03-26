@@ -36,6 +36,7 @@ class DataGenerator():
             annotation_count = 0
             object_bboxes = []
 
+            # Goind through every markup element tag and storing whatever is required
             for element in xml.etree.ElementTree.parse(annotation_folder + annotation).iter():
                 if 'filename' in element.tag:
                     image_names.append(image_dir + element.text)
@@ -46,6 +47,8 @@ class DataGenerator():
                 if 'object' in element.tag:
                     bbox = np.zeros((5))
                     annotation_count += 1
+
+                    # This try-except is used for checking if the object name is within classes
                     try:
                         bbox[4] = labels.index(element.find('name').text) + 1
                     except ValueError:
@@ -69,11 +72,15 @@ class DataGenerator():
                     object_bboxes.append(np.asarray(bbox))
             annotations.append(np.asarray(object_bboxes))
 
+            # Max annotations exists so the image_bboxes shapes stay the same
             if annotation_count > max_annotations:
                 max_annotations = annotation_count
 
+        # Converting both lists to nparrays
         image_names = np.array(image_names)
         image_bboxes = np.zeros((image_names.shape[0], max_annotations, 5))
+
+        # Reshaping image_bboxes
         for idx, bboxes in enumerate(annotations):
             image_bboxes[idx, :bboxes.shape[0], :5] = bboxes
 
