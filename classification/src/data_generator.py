@@ -78,3 +78,65 @@ class DataGenerator():
             image_bboxes[idx, :bboxes.shape[0], :5] = bboxes
 
         return image_names, image_bboxes
+
+    @staticmethod
+    def generate_tf_dataset(annotation_folder: str, image_dir: str, labels: list, batch_size: int):
+        '''
+        Creates a Tensorflow compatable dataset from YOLO images and annotations
+
+        Parameters:
+        -----------
+            annotation_folder : str
+                Dataset annotations location.
+            image_dir : str
+                Dataset images location.
+            labels : list
+                Object labels to be parsed.
+            batch_size : int
+                Image batch size.
+
+        Returns:
+        --------
+            A batched Tensorflow dataset.
+                batch : tuple
+                    (images, annotations)
+                        batch[0] : images : tensor (shape : batch_size, IMAGE_W, IMAGE_H, 3)
+                        batch[1] : annotations : tensor (shape : batch_size, max annot, 5)
+        '''
+        # Parsing annotations
+        image_names, image_bboxes = DataGenerator.parse_annotations(
+            annotation_folder, image_dir, labels)
+
+        # Creating a TF dataset from the parsed annotations nparrays
+        tf_dataset = tf.data.Dataset.from_tensor_slices(
+            (image_names, image_bboxes))
+
+        # Shuffling the data
+        tf_dataset = tf_dataset.shuffle(len(image_names))
+
+        # Repeats dataset data indefinetly
+        tf_dataset = tf_dataset.repeat()
+
+        # Replaces every image filepath in the tf_dataset with a tensor containing all the pixel
+        # values devided by 255, so they are floats between 0 and 1
+        tf_dataset = tf_dataset.map(
+            lambda image_object, image_bboxes: (
+                tf.image.convert_image_dtype(
+                    tf.image.decode_jpeg(
+                        tf.io.read_file(image_object),
+                        channels=3),
+                    tf.float32),
+                image_bboxes),
+            num_parallel_calls=6)
+
+        # Batching (grouping) togheter a given number images for training
+        tf_dataset = tf_dataset.batch(batch_size)
+
+        # From TF Dataset docs (https://www.tensorflow.org/api_docs/python/tf/data/Dataset#prefetch)
+        # Most dataset input pipelines should end with a call to prefetch. This allows later
+        # elements to be prepared while the current element is being processed. This often improves
+        # latency and throughput, at the cost of using additional memory to store prefetched
+        # elements.
+        tf_dataset = tf_dataset.prefetch(10)
+
+        return tf_dataset
