@@ -9,7 +9,7 @@ import imgaug as ia
 
 class DataGenerator():
     @staticmethod
-    def parse_annotations(annotation_folder: str, image_dir: str, labels: list):
+    def parse_annotations(annotation_folder: str, image_folder: str, labels: list):
         '''
         Extracts bounding box information from PASCAL VOC .xml annotation files.
 
@@ -17,7 +17,7 @@ class DataGenerator():
         ----------
         annotation_folder : str
             Dataset annotations location.
-        image_dir : str
+        image_folder : str
             Dataset images location.
         labels : list
             Object labels to be parsed.
@@ -42,7 +42,7 @@ class DataGenerator():
             # Goind through every markup element tag and storing whatever is required
             for element in xml.etree.ElementTree.parse(annotation_folder + annotation).iter():
                 if 'filename' in element.tag:
-                    image_names.append(image_dir + element.text)
+                    image_names.append(image_folder + element.text)
                 if 'width' in element.tag:
                     width = int(element.text)
                 if 'height' in element.tag:
@@ -61,17 +61,13 @@ class DataGenerator():
                         if 'bndbox' in attr.tag:
                             for dim in list(attr):
                                 if 'xmin' in dim.tag:
-                                    bbox[0] = int(
-                                        round(float(dim.text))) / width
+                                    bbox[0] = int(dim.text) / width
                                 if 'ymin' in dim.tag:
-                                    bbox[1] = int(
-                                        round(float(dim.text))) / height
+                                    bbox[1] = int(dim.text) / height
                                 if 'xmax' in dim.tag:
-                                    bbox[2] = int(
-                                        round(float(dim.text))) / width
+                                    bbox[2] = int(dim.text) / width
                                 if 'ymax' in dim.tag:
-                                    bbox[3] = int(
-                                        round(float(dim.text))) / height
+                                    bbox[3] = int(dim.text) / height
                     object_bboxes.append(np.asarray(bbox))
             annotations.append(np.asarray(object_bboxes))
 
@@ -90,7 +86,11 @@ class DataGenerator():
         return image_names, image_bboxes
 
     @staticmethod
-    def generate_tf_dataset(annotation_folder: str, image_dir: str, labels: list, batch_size: int):
+    def generate_tf_dataset(
+            annotation_folder: str,
+            image_folder: str,
+            labels: list,
+            batch_size: int):
         '''
         Creates a Tensorflow compatable dataset from YOLO images and annotations
 
@@ -98,7 +98,7 @@ class DataGenerator():
         -----------
         annotation_folder : str
             Dataset annotations location.
-        image_dir : str
+        image_folder : str
             Dataset images location.
         labels : list
             Object labels to be parsed.
@@ -115,7 +115,7 @@ class DataGenerator():
         '''
         # Parsing annotations
         image_names, image_bboxes = DataGenerator.parse_annotations(
-            annotation_folder, image_dir, labels)
+            annotation_folder, image_folder, labels)
 
         # Creating a TF dataset from the parsed annotations nparrays
         tf_dataset = tf.data.Dataset.from_tensor_slices(
