@@ -1,7 +1,10 @@
 import os
 import xml.etree.ElementTree
+from typing import Tuple
+
 import numpy as np
 import tensorflow as tf
+import imgaug as ia
 
 
 class DataGenerator():
@@ -12,21 +15,21 @@ class DataGenerator():
 
         Parameters:
         ----------
-            annotation_folder : str
-                Dataset annotations location.
-            image_dir : str
-                Dataset images location.
-            labels : list
-                Object labels to be parsed.
+        annotation_folder : str
+            Dataset annotations location.
+        image_dir : str
+            Dataset images location.
+        labels : list
+            Object labels to be parsed.
 
         Returns:
         --------
-            A tuple containing:
-                image_names : nparray
-                    Images files paths (shape : image_count, 1)
-                image_annotations : nparray
-                    Annotations every image (shape : image count, max annotation count, 5) with
-                    annotations in format xmin, ymin, xmax, ymax, class.
+        A tuple containing:
+            image_names : nparray
+                Images files paths (shape : image_count, 1)
+            image_annotations : nparray
+                Annotations every image (shape : image count, max annotation count, 5) with
+                annotations in format xmin, ymin, xmax, ymax, class.
         '''
         max_annotations = 0
         image_names = []
@@ -93,22 +96,22 @@ class DataGenerator():
 
         Parameters:
         -----------
-            annotation_folder : str
-                Dataset annotations location.
-            image_dir : str
-                Dataset images location.
-            labels : list
-                Object labels to be parsed.
-            batch_size : int
-                Image batch size.
+        annotation_folder : str
+            Dataset annotations location.
+        image_dir : str
+            Dataset images location.
+        labels : list
+            Object labels to be parsed.
+        batch_size : int
+            Image batch size.
 
         Returns:
         --------
-            A batched Tensorflow dataset.
-                batch : tuple
-                    (images, annotations)
-                        batch[0] : images : tensor (shape : batch_size, IMAGE_W, IMAGE_H, 3)
-                        batch[1] : annotations : tensor (shape : batch_size, max annot, 5)
+        A batched Tensorflow dataset.
+        batch : tuple
+            (images, annotations)
+                batch[0] : images : tensor (shape : batch_size, IMAGE_W, IMAGE_H, 3)
+                batch[1] : annotations : tensor (shape : batch_size, max annot, 5)
         '''
         # Parsing annotations
         image_names, image_bboxes = DataGenerator.parse_annotations(
@@ -147,3 +150,85 @@ class DataGenerator():
         tf_dataset = tf_dataset.prefetch(10)
 
         return tf_dataset
+
+    @staticmethod
+    def augment_dataset(
+            yolo_dataset: tf.data.Dataset,
+            image_shape: Tuple[int, int],
+            horizontal_flip_propability: int = 0.5,
+            vertical_flip_propability: int = 0,
+            brightness_range: Tuple[int, int] = (0.5, 1.5),
+            contrast_range: Tuple[int, int] = (0.8, 1.2)):
+        '''
+        Augments (randomizes) the image data in a given YOLO dataset.
+
+        Parameters:
+        -----------
+        yolo_dataset : tf.data.Dataset
+            Batched YOLO Tensorflow dataset to be augmented.
+        image_shape : Tuple[int, int]
+            Image dimentions tuple.
+        horizontal_flip_propability : int (default: 0.5)
+            Probability of an image to be flipped horizontally.
+        vertical_flip_propability : int (default: 0)
+            Probability of an image to be flipped vertically.
+        brightness_range : Tuple[int, int] (default: 0.5, 1.5)
+            Multiplier range by which the brightness values to be updated.
+        contrast_range : Tuple[int, int] (default: 0.5, 1.5)
+            Multiplier range by which the brightness values to be updated.
+
+        Returns:
+        --------
+        Augmented batched Tensorflow dataset.
+        batch : tuple
+            (images, annotations)
+                batch[0] : images : tensor (shape : batch_size, IMAGE_W, IMAGE_H, 3)
+                batch[1] : annotations : tensor (shape : batch_size, max annot, 5)
+        '''
+        for batch in yolo_dataset:
+            # Setting augmentation parameters
+            sequence = ia.augmenters.Sequential([
+                # Horizontal flipping
+                ia.augmenters.Fliplr(horizontal_flip_propability),
+
+                # Vertical flipping
+                ia.augmenters.Flipud(vertical_flip_propability),
+
+                # Brightness increase/decrease
+                ia.augmenters.Multiply(brightness_range),
+
+                # Contrast incrase/decrease
+                ia.augmenters.ContrastNormalization(contrast_range),
+            ])
+
+            # Converting Tensor dataset to Numpy array
+            img = batch[0].numpy()
+            bboxes = batch[1]. numpy()
+
+            # Converting the bbox numpy to an image augmentation object
+            ia_boxes = []
+            for i in range(img.shape[0]):
+                ia_boxes.append(ia.BoundingBoxesOnImage(
+                    [ia.BoundingBox(x1=bb[0], y1=bb[1], x2=bb[2], y2=bb[3])
+                     for bb in bboxes[i] if bb[0] + bb[1] + bb[2] + bb[3] > 0],
+                    shape=image_shape))
+
+            # Performing dataset augmentation
+            seq_det = sequence.to_deterministic()
+            img_aug = np.clip(seq_det.augment_images(img), 0, 1)
+            boxes_aug = seq_det.augment_bounding_boxes(ia_boxes)
+
+            # Converting the image augmentation object back to a numpy array
+            for i in range(img.shape[0]):
+                boxes_aug[i] = boxes_aug[i].remove_out_of_image(
+                ).clip_out_of_image()
+                for j, bbox in enumerate(boxes_aug[i].bounding_boxes):
+                    bboxes[i, j, 0] = bbox.x1
+                    bboxes[i, j, 1] = bbox.y1
+                    bboxes[i, j, 2] = bbox.x2
+                    bboxes[i, j, 3] = bbox.y2
+
+            # Converting Numpy array to Tensor dataset and returning it
+            yield (
+                tf.convert_to_tensor(img_aug),
+                tf.convert_to_tensor(bboxes))
