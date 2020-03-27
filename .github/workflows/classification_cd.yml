@@ -6,25 +6,32 @@ on:
       - master
 
 env:
+  GCE_AUTH: ${{ secrets.GCE_AUTH }}
   GCE_PROJECT: ${{ secrets.GCE_PROJECT }}
-  GCE_INSTANCE: classification-train
-  GCE_INSTANCE_ZONE: us-central1-a
+  GCE_INSTANCE: ${{ secrets.GCE_INSTANCE }}
+  GCE_INSTANCE_ZONE: ${{ secrets.GCE_INSTANCE_ZONE }}
 
 jobs:
-  setup-build-publish-deploy:
-    name: Setup, Build, Publish, and Deploy
+  train-model:
+    name: Train model in GCE
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
-
-      - name: Setup Google C  loud CLI
+      - name: Setup Google Cloud CLI
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: "270.0.0"
-          service_account_email: ${{ secrets.SA_EMAIL }}
-          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          version: '285.0.0'
 
-      # Configure docker to use the gcloud command-line tool as a credential helper
-      - run: |
-          gcloud compute instanses list
+      - name: Google Cloud Authentication
+        run: |
+          echo "$GCE_AUTH" | base64 --decode > "$HOME"/gcloud.json
+          sh -c "gcloud auth activate-service-account --key-file=$HOME/gcloud.json $*"
+          gcloud config set project ${{ secrets.GCE_PROJECT }}
+          rm "$HOME"/gcloud.json
+
+      - name: Configure SSH to instance
+        run: |
+          gcloud compute config-ssh
+
+      - name: Testing SSH connection
+        run: |
+          gcloud compute ssh "$GCE_INSTANCE" --zone "$GCE_INSTANCE_ZONE" --command "ls -la"
