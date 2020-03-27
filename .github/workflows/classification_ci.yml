@@ -1,0 +1,70 @@
+name: Classification Continuous Integration (CI)
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "classification/**"
+
+jobs:
+  python_flake8_linting:
+    name: Check linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        working-directory: classification/
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run Flake8 linting
+        working-directory: classification/
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  python_unittests:
+    name: Run all python unittests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        working-directory: classification/
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run DataGenerator unit tests
+        working-directory: classification/
+        run: |
+          python -m test.data_generator
+
+  jupyter_execute:
+    name: Execute main notebook
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        working-directory: classification/
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Execute the notebook
+        uses: yaananth/run-notebook@v1
+        with:
+          notebook: "classification/YOLO_Traffic_classification.ipynb"
+          isReport: False
+          poll: True
