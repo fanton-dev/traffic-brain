@@ -90,7 +90,8 @@ class DataGenerator():
             annotation_folder: str,
             image_folder: str,
             labels: list,
-            batch_size: int):
+            batch_size: int,
+            image_size: Tuple[int, int]):
         '''
         Creates a Tensorflow compatable dataset from YOLO images and annotations
 
@@ -131,12 +132,14 @@ class DataGenerator():
         # values devided by 255, so they are floats between 0 and 1
         tf_dataset = tf_dataset.map(
             lambda image_object, image_bboxes: (
-                tf.image.convert_image_dtype(
-                    tf.image.decode_jpeg(
-                        tf.io.read_file(image_object),
-                        channels=3),
-                    tf.float32),
-                image_bboxes),
+                tf.image.resize(
+                    tf.image.convert_image_dtype(
+                        tf.image.decode_jpeg(
+                            tf.io.read_file(image_object),
+                            channels=3),
+                        tf.float32),
+                    [tf.cast(image_size[0], tf.int32), tf.cast(image_size[1], tf.int32)]),
+                list(image_size)),
             num_parallel_calls=6)
 
         # Batching (grouping) togheter a given number images for training
