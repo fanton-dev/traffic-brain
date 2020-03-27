@@ -1,0 +1,30 @@
+name: Classification Continuous Deployment (CD)
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  GCE_PROJECT: ${{ secrets.GCE_PROJECT }}
+  GCE_INSTANCE: classification-train
+  GCE_INSTANCE_ZONE: us-central1-a
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Google C  loud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "270.0.0"
+          service_account_email: ${{ secrets.SA_EMAIL }}
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      # Configure docker to use the gcloud command-line tool as a credential helper
+      - run: |
+          gcloud compute instanses list
