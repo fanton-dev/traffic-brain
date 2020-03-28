@@ -1,9 +1,11 @@
-name: Classification Continuous Deployment (CD)
+name: Classification CD
 
 on:
   push:
     branches:
       - master
+    paths:
+      - "classification/**"
 
 env:
   GCE_AUTH: ${{ secrets.GCE_AUTH }}
@@ -34,4 +36,4 @@ jobs:
 
       - name: Testing SSH connection
         run: |
-          gcloud compute ssh "$GCE_INSTANCE" --zone "$GCE_INSTANCE_ZONE" --command "ls -la"
+          gcloud compute ssh "$GCE_INSTANCE" --zone "$GCE_INSTANCE_ZONE" --command "echo Connection established!"

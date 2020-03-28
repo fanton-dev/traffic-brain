@@ -1,4 +1,4 @@
-name: Classification Continuous Integration (CI)
+name: Classification CI
 
 on:
   pull_request:
@@ -12,16 +12,20 @@ jobs:
     name: Check linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: GitHub Checkout
+        uses: actions/checkout@v2
+
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
+
       - name: Install dependencies
         working-directory: classification/
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
       - name: Run Flake8 linting
         working-directory: classification/
         run: |
@@ -33,16 +37,20 @@ jobs:
     name: Run all python unittests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: GitHub Checkout
+        uses: actions/checkout@v2
+
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
+
       - name: Install dependencies
         working-directory: classification/
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
       - name: Run DataGenerator unit tests
         working-directory: classification/
         run: |
@@ -52,16 +60,20 @@ jobs:
     name: Execute main notebook
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: GitHub Checkout
+        uses: actions/checkout@v2
+
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
+
       - name: Install dependencies
         working-directory: classification/
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
       - name: Execute the notebook
         uses: yaananth/run-notebook@v1
         with:
