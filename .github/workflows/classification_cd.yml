@@ -15,13 +15,13 @@ env:
 
 jobs:
   train-model:
-    name: Train model in GCE
+    name: Train in GCE
     runs-on: ubuntu-latest
     steps:
       - name: Setup Google Cloud CLI
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: '285.0.0'
+          version: "285.0.0"
 
       - name: Google Cloud Authentication
         run: |
@@ -34,6 +34,24 @@ jobs:
         run: |
           gcloud compute config-ssh
 
-      - name: Testing SSH connection
+      - name: Clone repository on the GCE VM
         run: |
-          gcloud compute ssh "$GCE_INSTANCE" --zone "$GCE_INSTANCE_ZONE" --command "echo Connection established!"
+          gcloud compute ssh "$GCE_INSTANCE" \
+                             --zone "$GCE_INSTANCE_ZONE" \
+                             --command "rm -r traffic-brain;
+                                        git clone https://github.com/braind3d/traffic-brain"
+
+      - name: Installing dependencies on the GCE VM
+        run: |
+          gcloud compute ssh "$GCE_INSTANCE" \
+                             --zone "$GCE_INSTANCE_ZONE" \
+                             --command "pip3 install --upgrade pip;
+                                        pip3 install -r traffic-brain/classification/requirements.txt"
+
+      - name: Training the model
+        run: |
+          gcloud compute ssh "$GCE_INSTANCE" \
+                             --zone "$GCE_INSTANCE_ZONE" \
+                             --command "cd traffic-brain/classification/;
+                                        jupyter nbconvert --to python YOLO_Traffic_classification.ipynb;
+                                        ipython3 YOLO_Traffic_classification.py"
