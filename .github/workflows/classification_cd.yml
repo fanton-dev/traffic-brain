@@ -12,6 +12,8 @@ env:
   GCE_PROJECT: ${{ secrets.GCE_PROJECT }}
   GCE_INSTANCE: ${{ secrets.GCE_INSTANCE }}
   GCE_INSTANCE_ZONE: ${{ secrets.GCE_INSTANCE_ZONE }}
+  GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+  GCAI_MODEL: ${{ secrets.GCAI_MODEL }}
 
 jobs:
   train-model:
@@ -27,8 +29,13 @@ jobs:
         run: |
           echo "$GCE_AUTH" | base64 --decode > "$HOME"/gcloud.json
           sh -c "gcloud auth activate-service-account --key-file=$HOME/gcloud.json $*"
-          gcloud config set project ${{ secrets.GCE_PROJECT }}
+          gcloud config set project $GCE_PROJECT
           rm "$HOME"/gcloud.json
+
+      - name: Start cloud instance
+        run: |
+          gcloud compute instances start "$GCE_INSTANCE" \
+                                         --zone "$GCE_INSTANCE_ZONE"
 
       - name: Configure SSH to instance
         run: |
@@ -55,3 +62,77 @@ jobs:
                              --command "cd traffic-brain/classification/;
                                         jupyter nbconvert --to python YOLO_Traffic_classification.ipynb;
                                         ipython3 YOLO_Traffic_classification.py"
+
+      - name: Stop cloud instance
+        run: |
+          gcloud compute instances stop "$GCE_INSTANCE" \
+                                        --zone "$GCE_INSTANCE_ZONE"
+
+  store-model-cloud-storage:
+    name: Store in GC Storage
+    needs: [train-model]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Google Cloud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "285.0.0"
+
+      - name: Google Cloud Authentication
+        run: |
+          echo "$GCE_AUTH" | base64 --decode > "$HOME"/gcloud.json
+          sh -c "gcloud auth activate-service-account --key-file=$HOME/gcloud.json $*"
+          gcloud config set project $GCE_PROJECT
+          rm "$HOME"/gcloud.json
+
+      - name: Start cloud instance
+        run: |
+          gcloud compute instances start "$GCE_INSTANCE" \
+                                         --zone "$GCE_INSTANCE_ZONE"
+
+      - name: Configure SSH to instance
+        run: |
+          gcloud compute config-ssh
+
+      - name: Transfering model to GC Storage
+        working-directory: traffic-brain/classification/checkpoints/
+        run: |
+          VERSION_NAME=$(ls . | tail -1)
+          gcloud compute ssh "$GCE_INSTANCE" \
+                             --zone "$GCE_INSTANCE_ZONE" \
+                             --command "gsutil cp -r $SAVED_MODEL_DIR gs://$GCS_BUCKET/$VERSION_NAME"
+
+      - name: Stop cloud instance
+        run: |
+          gcloud compute instances stop "$GCE_INSTANCE" \
+                                        --zone "$GCE_INSTANCE_ZONE"
+
+  deploy-model:
+    name: Deploy model in GC
+    needs: [train-model, store-model-cloud-storage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Google Cloud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "285.0.0"
+
+      - name: Google Cloud Authentication
+        run: |
+          echo "$GCE_AUTH" | base64 --decode > "$HOME"/gcloud.json
+          sh -c "gcloud auth activate-service-account --key-file=$HOME/gcloud.json $*"
+          gcloud config set project $GCE_PROJECT
+          rm "$HOME"/gcloud.json
+
+      - name: Deploying model version
+        run: |
+          gcloud components install beta
+
+          VERSION_NAME=$(gsutil ls gs://$GCS_BUCKET/ | tail -1)
+
+          gcloud beta ai-platform versions create $VERSION_NAME \
+            --model $GCAI_MODEL \
+            --origin gs://$GCS_BUCKET/$VERSION_NAME \
+            --framework "TensorFlow" \
+            --runtime-version=2.1.0 \
+            --python-version=3.7
