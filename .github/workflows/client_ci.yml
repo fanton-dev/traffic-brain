@@ -1,0 +1,104 @@
+name: Client CI
+
+on:
+  push:
+    branches: [master]
+    paths: ["client/**"]
+  pull_request:
+    branches: [master]
+    paths: ["client/**"]
+
+jobs:
+  lint:
+    name: Check project linting
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.8
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check linting
+        run: npm run lint
+
+  ng-build:
+    name: Angular build
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.8
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build -- --prod
+
+  ng-test:
+    name: Run Angular tests
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.8
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test -- --configuration=ci
+
+      - name: Run E2E tests
+        run: npm run e2e -- --configuration=ci
+
+  electron-test:
+    name: Run Electron tests
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.8
+
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.github_token }}
