@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Client+CI">
-<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Client+CI?style=flat-square" alt="Client CI status">
+<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Client+CI%22">
+<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Client CI?style=flat-square" alt="Client CI status">
 </a>
 
 <a href="https://github.com/braind3d/traffic-brain/issues?q=is%3Aopen+is%3Aissue+label%3Aclient">

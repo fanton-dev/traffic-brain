@@ -2,8 +2,8 @@
 > YOLOv2 (You only look once) is a widely used in computer vision tasks such as face detection, object recognition, etc. This is a Tensorflow 2.1.0 implementation of the same architecture (with slight modifications) for traffic assesment. 
 
 <p align="center">
-<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Classification+CI">
-<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Classification+CI?style=flat-square" alt="Classification CI status">
+<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Classification+CI%22">
+<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Classification CI?style=flat-square" alt="Classification CI status">
 </a>
 
 <a href="https://github.com/braind3d/traffic-brain/issues?q=is%3Aopen+is%3Aissue+label%3Aclassification">

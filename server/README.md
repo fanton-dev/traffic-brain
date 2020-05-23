@@ -2,8 +2,8 @@
 > The main server is the brain of the whole project. It is used to communicate with each and every traffic light node, the object recognition model deployed in GCE and the front-end control panel.
 
 <p align="center">
-<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Server+CI">
-<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Server+CI?style=flat-square" alt="Server CI status">
+<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Server+CI%22">
+<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Server CI?style=flat-square" alt="Server CI status">
 </a>
 
 <a href="https://github.com/braind3d/traffic-brain/issues?q=is%3Aopen+is%3Aissue+label%3Aserver">

@@ -2,8 +2,8 @@
 The embedded part of this project is conserned with the end point traffic light device. It contains a schematic on the device's architecture and a local server for communicating with the main server.
 
 <p align="center">
-<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Embedded+CI">
-<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Embedded+CI?style=flat-square" alt="Embedded CI status">
+<a href="https://github.com/braind3d/traffic-brain/actions?query=workflow%3A%22Embedded+CI%22">
+<img src="https://img.shields.io/github/workflow/status/braind3d/traffic-brain/Embedded CI?style=flat-square" alt="Embedded CI status">
 </a>
 
 <a href="https://github.com/braind3d/traffic-brain/issues?q=is%3Aopen+is%3Aissue+label%3Aembedded">
