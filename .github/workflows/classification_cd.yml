@@ -2,10 +2,8 @@ name: Classification CD
 
 on:
   push:
-    branches:
-      - master
-    paths:
-      - "classification/**"
+    branches: [master]
+    paths: ["classification/**"]
 
 env:
   GCE_AUTH: ${{ secrets.GCE_AUTH }}
@@ -64,6 +62,7 @@ jobs:
                                         ipython3 YOLO_Traffic_classification.py"
 
       - name: Stop cloud instance
+        if: ${{ always() }}
         run: |
           gcloud compute instances stop "$GCE_INSTANCE" \
                                         --zone "$GCE_INSTANCE_ZONE"
@@ -103,6 +102,7 @@ jobs:
                              --command "gsutil cp -r $SAVED_MODEL_DIR gs://$GCS_BUCKET/$VERSION_NAME"
 
       - name: Stop cloud instance
+        if: ${{ always() }}
         run: |
           gcloud compute instances stop "$GCE_INSTANCE" \
                                         --zone "$GCE_INSTANCE_ZONE"

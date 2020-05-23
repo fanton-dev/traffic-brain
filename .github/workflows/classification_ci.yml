@@ -1,16 +1,22 @@
 name: Classification CI
 
 on:
+  push:
+    branches: [master]
+    paths: ["classification/**"]
   pull_request:
-    branches:
-      - master
-    paths:
-      - "classification/**"
+    branches: [master]
+    paths: ["classification/**"]
 
 jobs:
-  python_flake8_linting:
+  linting:
     name: Check linting
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
     steps:
       - name: GitHub Checkout
         uses: actions/checkout@v2
@@ -33,9 +39,14 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-  python_unittests:
+  test:
     name: Run all python unittests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
     steps:
       - name: GitHub Checkout
         uses: actions/checkout@v2
@@ -56,9 +67,14 @@ jobs:
         run: |
           python -m test.data_generator
 
-  jupyter_execute:
-    name: Execute main notebook
-    runs-on: ubuntu-latest
+  run:
+    name: Run the main notebook
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
     steps:
       - name: GitHub Checkout
         uses: actions/checkout@v2
@@ -73,10 +89,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install ipython
 
       - name: Execute the notebook
-        uses: yaananth/run-notebook@v1
-        with:
-          notebook: "classification/YOLO_Traffic_classification.ipynb"
-          isReport: False
-          poll: True
+        working-directory: classification/
+        run: |
+          jupyter nbconvert --to python YOLO_Traffic_classification.ipynb
+          ipython3 YOLO_Traffic_classification.py
