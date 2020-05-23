@@ -43,7 +43,8 @@ The following setup has been testet on the `Raspberry Pi 3` with `Raspbian Buste
 Make sure Python 3.7 is installed. Then run the following:
 ```
 # Install dependencies
-$ pip install -r requirements.txt
+$ python3.7 -m pip install pip
+$ pip3 install -r requirements.txt
 
 # Run the local server
 $ flask run
@@ -51,7 +52,7 @@ $ flask run
 
 #### Setting the server to start on boot
 ```
-sudo nano /etc/rc.local
+$ sudo echo "python3.7 $PWD/app.py" >> $HOME/.bashrc
 ```
 
 ### Built With
