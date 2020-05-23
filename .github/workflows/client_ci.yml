@@ -27,9 +27,11 @@ jobs:
           node-version: 12.8
 
       - name: Install dependencies
+        working-directory: client/
         run: npm install
 
       - name: Check linting
+        working-directory: client/
         run: npm run lint
 
   ng-build:
@@ -50,9 +52,11 @@ jobs:
           node-version: 12.8
 
       - name: Install dependencies
+        working-directory: client/
         run: npm install
 
       - name: Build project
+        working-directory: client/
         run: npm run build -- --prod
 
   ng-test:
@@ -73,12 +77,15 @@ jobs:
           node-version: 12.8
 
       - name: Install dependencies
+        working-directory: client/
         run: npm install
 
       - name: Run tests
+        working-directory: client/
         run: npm test -- --configuration=ci
 
       - name: Run E2E tests
+        working-directory: client/
         run: npm run e2e -- --configuration=ci
 
   electron-test:
@@ -98,7 +105,8 @@ jobs:
         with:
           node-version: 12.8
 
-      - name: Build/release Electron app
+      - name: Build/Release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
           github_token: ${{ secrets.github_token }}
+          package_root: "client/"

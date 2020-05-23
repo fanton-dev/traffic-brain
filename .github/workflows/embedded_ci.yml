@@ -3,10 +3,10 @@ name: Embedded CI
 on:
   push:
     branches: [master]
-    paths: ["embedded/**"]
+    paths: ["embedded/raspberry/**"]
   pull_request:
     branches: [master]
-    paths: ["embedded/**"]
+    paths: ["embedded/raspberry/**"]
 
 jobs:
   lint:
@@ -23,12 +23,14 @@ jobs:
           python-version: 3.7
 
       - name: Install dependencies
+        working-directory: embedded/raspberry/
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Lint with flake8
+        working-directory: embedded/raspberry/
         run: |
           pip install flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -48,11 +50,13 @@ jobs:
           python-version: 3.7
 
       - name: Install dependencies
+        working-directory: embedded/raspberry/
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Test with pytest
+        working-directory: embedded/raspberry/
         run: |
           pytest
