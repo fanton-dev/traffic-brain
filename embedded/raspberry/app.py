@@ -23,7 +23,10 @@ Usage:
 
 import os
 import json
+import collections
+
 import flask
+
 from camera import Camera
 from light_controller import LightController, LEDBoard
 
@@ -55,6 +58,25 @@ def status():
     '''
 
     return flask.jsonify(LIGHTS_STATUS)
+
+
+@app.route('/animation', methods=['POST'])
+def animation():
+    '''
+    POST /change_lights
+    -------------------
+    Stores a new submitted animation json file.
+    '''
+    data = flask.request.json
+
+    def compare(list1, list2):
+        return collections.Counter(list1) == collections.Counter(list2)
+
+    if compare(['name', 'fps', 'looped', 'frames'], data.keys()):
+        return "Invalid animation json.", 400
+
+    with open('animations/{}.json'.format(data['name']), 'w') as animation_file:
+        json.dump(data, animation_file)
 
 
 @app.route('/change_lights', methods=['POST'])
