@@ -1,4 +1,15 @@
-#!/usr/bin/env python
+'''
+Module interface for controlling the embedded traffic lights connected
+to the Raspberry Pi. The 3 16x16 LED matrices are controlled by 2 shift
+registers each. This module presents the means for loading a sequence of
+16x16 frames onto each of the boards.
+
+Usage:
+    The module could be used by importing it like shown:
+
+        from light_controller import LightController, LEDBoard
+'''
+
 import time
 from typing import List
 from enum import Enum
@@ -11,56 +22,120 @@ ROW_SIZE = 16
 
 
 class LEDBoard(Enum):
+    '''
+    Enum containing the colors of the 3 LED boards.
+
+    Contains:
+    ---------
+        - RED
+        - YELLOW
+        - GREEN
+    '''
+
     RED = 'red'
     YELLOW = 'yellow'
     GREEN = 'green'
 
 
 class LightController():
+    '''
+    Class used for interacting with the embedded traffic lights.
+
+    Parameters:
+    -----------
+    clock : int (default: 14)
+        GPIO pin to be used clock synchronization.
+
+    Red Light:
+        data_bit_rx : int (default: 1)
+            GPIO pin for pasing serial data to the rows controling shift register.
+        data_bit_rxl : int (default: 2)
+            GPIO pin for latch of the rows controling shift register.
+
+        data_bit_ry : int (default: 3)
+            GPIO pin for pasing serial data to the columns controling shift register.
+        data_bit_ryl : int (default: 4)
+            GPIO pin for latch of the columns controling shift register.
+
+    Yellow Light:
+        data_bit_rx : int (default: 5)
+            GPIO pin for pasing serial data to the rows controling shift register.
+        data_bit_rxl : int (default: 6)
+            GPIO pin for latch of the rows controling shift register.
+
+        data_bit_ry : int (default: 7)
+            GPIO pin for pasing serial data to the columns controling shift register.
+        data_bit_ryl : int (default: 8)
+            GPIO pin for latch of the columns controling shift register.
+
+    Green Light:
+        data_bit_rx : int (default: 9)
+            GPIO pin for pasing serial data to the rows controling shift register.
+        data_bit_rxl : int (default: 10)
+            GPIO pin for latch of the rows controling shift register.
+
+        data_bit_ry : int (default: 11)
+            GPIO pin for pasing serial data to the columns controling shift register.
+        data_bit_ryl : int (default: 12)
+            GPIO pin for latch of the columns controling shift register.
+    '''
+
     def __init__(
             self,
             clock: int = 14,
             data_bit_rx: int = 1,
-            data_bit_ry: int = 2,
-            data_bit_rl: int = 3,
-            data_bit_yx: int = 4,
-            data_bit_yy: int = 5,
-            data_bit_yl: int = 6,
-            data_bit_gx: int = 7,
-            data_bit_gy: int = 8,
-            data_bit_gl: int = 9
+            data_bit_rxl: int = 2,
+            data_bit_ry: int = 3,
+            data_bit_ryl: int = 4,
+            data_bit_yx: int = 5,
+            data_bit_yxl: int = 6,
+            data_bit_yy: int = 7,
+            data_bit_yyl: int = 8,
+            data_bit_gx: int = 9,
+            data_bit_gxl: int = 10,
+            data_bit_gy: int = 11,
+            data_bit_gyl: int = 12,
     ):
 
         # Storing pin numbers (X - rows, Y - columns, L - latch)
         self.clock = clock
         self.data_bit_rx = data_bit_rx
+        self.data_bit_rxl = data_bit_rxl
         self.data_bit_ry = data_bit_ry
-        self.data_bit_rl = data_bit_rl
+        self.data_bit_ryl = data_bit_ryl
         self.data_bit_yx = data_bit_yx
+        self.data_bit_yxl = data_bit_yxl
         self.data_bit_yy = data_bit_yy
-        self.data_bit_yl = data_bit_yl
+        self.data_bit_yyl = data_bit_yyl
         self.data_bit_gx = data_bit_gx
+        self.data_bit_gxl = data_bit_gxl
         self.data_bit_gy = data_bit_gy
-        self.data_bit_gl = data_bit_gl
+        self.data_bit_gyl = data_bit_gyl
 
         # Setup IO
         GPIO.setup(self.clock, GPIO.OUT)
         GPIO.setup(self.data_bit_rx, GPIO.OUT)
+        GPIO.setup(self.data_bit_rxl, GPIO.OUT)
         GPIO.setup(self.data_bit_ry, GPIO.OUT)
-        GPIO.setup(self.data_bit_rl, GPIO.OUT)
+        GPIO.setup(self.data_bit_ryl, GPIO.OUT)
         GPIO.setup(self.data_bit_yx, GPIO.OUT)
+        GPIO.setup(self.data_bit_yxl, GPIO.OUT)
         GPIO.setup(self.data_bit_yy, GPIO.OUT)
-        GPIO.setup(self.data_bit_yl, GPIO.OUT)
-        GPIO.setup(self.data_bit_gx, GPIO.OUT)
-        GPIO.setup(self.data_bit_gy, GPIO.OUT)
-        GPIO.setup(self.data_bit_gl, GPIO.OUT)
+        GPIO.setup(self.data_bit_yyl, GPIO.OUT)
+        GPIO.setup(self.data_bit_rx, GPIO.OUT)
+        GPIO.setup(self.data_bit_rxl, GPIO.OUT)
+        GPIO.setup(self.data_bit_ry, GPIO.OUT)
+        GPIO.setup(self.data_bit_ryl, GPIO.OUT)
 
-        GPIO.output(self.data_bit_rl, LOW)
-        GPIO.output(self.data_bit_yl, LOW)
-        GPIO.output(self.data_bit_gl, LOW)
         GPIO.output(self.clock, LOW)
+        GPIO.output(self.data_bit_rxl, LOW)
+        GPIO.output(self.data_bit_ryl, LOW)
+        GPIO.output(self.data_bit_yxl, LOW)
+        GPIO.output(self.data_bit_yyl, LOW)
+        GPIO.output(self.data_bit_gxl, LOW)
+        GPIO.output(self.data_bit_gyl, LOW)
 
-    def _pulsePin(self, pin: int):
+    def __pulsePin(self, pin: int):
         '''
         Pulse a given pin.
 
@@ -77,7 +152,7 @@ class LightController():
         GPIO.output(pin, HIGH)
         GPIO.output(pin, LOW)
 
-    def _ssrWrite(self, value: int, data_pin: int, latch_pin: int):
+    def __ssrWrite(self, value: int, data_pin: int, latch_pin: int):
         '''
         Write a binary value through the serial input of the shift register.
 
@@ -104,13 +179,13 @@ class LightController():
                 GPIO.output(data_pin, LOW)
 
             # Pulse the Clock -> switch to next bit of serial input
-            self._pulsePin(self.clock)
+            self.__pulsePin(self.clock)
 
             # Shift the value with 1 bit in order to get the next bit to push
             value = value << 0x0001
 
         # When it is all complete -> pulse the Latch so output is on parallel out
-        self._pulsePin(latch_pin)
+        self.__pulsePin(latch_pin)
 
     def display_frame(self, frame: List[int, int], color: LEDBoard):
         '''
@@ -129,34 +204,34 @@ class LightController():
         '''
 
         # Defining bits to be serially pushed to the shift register
-        x = 0b1
-        y = 0b0
+        x_bits = 0b1
+        y_bits = 0b0
 
         for row in frame:
             # Switching the row (with color check)
             if color == 'red':
-                self._ssrWrite(x, self.data_bit_rx, self.data_bit_rl)
+                self.__ssrWrite(x_bits, self.data_bit_rx, self.data_bit_rxl)
             if color == 'yellow':
-                self._ssrWrite(x, self.data_bit_yx, self.data_bit_yl)
+                self.__ssrWrite(x_bits, self.data_bit_yx, self.data_bit_yxl)
             if color == 'green':
-                self._ssrWrite(x, self.data_bit_gx, self.data_bit_gl)
+                self.__ssrWrite(x_bits, self.data_bit_gx, self.data_bit_gxl)
 
             # Convert row to bits. For ex:
             # [0, 1, 0, 0, 1] will turn into 9 or rather 0b01001
             for j, cell in enumerate(row):
-                y += cell * (2 ** j)
+                y_bits += cell * (2 ** j)
 
             # Displaying every cell of the row (with color check)
             if color == LEDBoard.RED:
-                self._ssrWrite(y, self.data_bit_ry, self.data_bit_rl)
+                self.__ssrWrite(y_bits, self.data_bit_ry, self.data_bit_ryl)
             if color == LEDBoard.YELLOW:
-                self._ssrWrite(y, self.data_bit_yy, self.data_bit_yl)
+                self.__ssrWrite(y_bits, self.data_bit_yy, self.data_bit_yyl)
             if color == LEDBoard.GREEN:
-                self._ssrWrite(y, self.data_bit_gy, self.data_bit_gl)
+                self.__ssrWrite(y_bits, self.data_bit_gy, self.data_bit_gyl)
 
             # Shifting x for next row and reseting y
-            x = x << 1
-            y = 0b0
+            x_bits = x_bits << 1
+            y_bits = 0b0
 
     def display_animation(
             self,
