@@ -1,0 +1,31 @@
+name: Embedded CD
+
+on:
+  push:
+    branches: [master, feature/embedded]
+    paths: ["embedded/raspberry/**"]
+
+env:
+  EMBEDDED_DEPLOYMENT_PATH: ${{ secrets.EMBEDDED_DEPLOYMENT_PATH }}
+
+jobs:
+  deploy:
+    name: Deploy on Raspberry
+    runs-on: self-hosted
+
+    steps:
+      - name: Setup Subversion
+        run: |
+          sudo apt-get install subversion -y
+
+      - name: Update embedded server code from repository
+        run: |
+          sudo svn export https://github.com/braind3d/traffic-brain/trunk/embedded/raspberry $EMBEDDED_DEPLOYMENT_PATH --force
+
+      - name: Installing missing dependencies
+        run: |
+          sudo pip3 install -r traffic-brain/requirements.txt
+
+      - name: Scheduling reboot
+        run: |
+          sudo shutdown -r 1
