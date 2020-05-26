@@ -11,7 +11,7 @@ on:
 jobs:
   lint:
     name: Check project linting
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Check out Git repository
@@ -26,7 +26,7 @@ jobs:
         working-directory: embedded/raspberry/
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest
+          pip install flake8
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Lint with flake8
@@ -38,7 +38,7 @@ jobs:
 
   test:
     name: Run all tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Check out Git repository
@@ -52,9 +52,9 @@ jobs:
       - name: Install dependencies
         working-directory: embedded/raspberry/
         run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          python3 -m pip install --upgrade pip3
+          pip3 install pytest
+          if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
 
       - name: Test with pytest
         working-directory: embedded/raspberry/
