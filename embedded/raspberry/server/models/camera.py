@@ -29,6 +29,9 @@ class Camera:
     def __init__(self, camera=cv2.VideoCapture(0)):
         self.camera = camera
 
+    def __del__(self):
+        self.camera.release()
+
     def generate_frames(self):
         '''
         Captures a livestreams from the CV2 camera and returns it.
