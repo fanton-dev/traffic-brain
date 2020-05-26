@@ -97,3 +97,71 @@ def test_animation_invalid(test_client):
     # Verifing response
     assert response.status_code == 400
     assert response.data == b'Invalid animation JSON.'
+
+
+def test_change_lights_valid(test_client):
+    '''
+    GIVEN a Flask application
+    WHEN the '/traffic-light/change_lights' route is posted to valid arguments (POST)
+    THEN check the response is valid
+
+    Parameters:
+    -----------
+    test_client
+        Flask test application
+
+    Returns:
+    --------
+    None
+    '''
+
+    response = test_client.post(
+        '/traffic-light/change_lights?red=filled&yellow=empty&green=empty')
+
+    # Verifing response code
+    assert response.status_code == 200
+
+    # Verifing response data
+    response_data = json.loads(
+        response.data.decode("utf-8").replace('\'', '"'))
+    assert response_data == {'green': 'empty',
+                             'red': 'filled', 'yellow': 'empty'}
+
+    # Reseting the light to be empty
+    test_client.post(
+        '/traffic-light/change_lights?red=empty&yellow=empty&green=empty')
+
+
+def test_change_lights_invalid(test_client):
+    '''
+    GIVEN a Flask application
+    WHEN the '/traffic-light/change_lights' route is posted to invalid arguments (POST)
+    THEN check the response is valid
+
+    Parameters:
+    -----------
+    test_client
+        Flask test application
+
+    Returns:
+    --------
+    None
+    '''
+
+    # Making a request with missing fields
+    response = test_client.post('/traffic-light/change_lights?red=invalid_arg')
+
+    # Verifing response code
+    assert response.status_code == 400
+
+    # Verifing response data
+    assert response.data == b"Missing arguments."
+
+    # Making a request with missing fields
+    response = test_client.post('/traffic-light/change_lights?red=filled&yellow=empty&green=nonexistent')
+
+    # Verifing response code
+    assert response.status_code == 400
+
+    # Verifing response data
+    assert response.data == b"Invalid animation passed for \"green\"."
