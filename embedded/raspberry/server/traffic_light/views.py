@@ -43,10 +43,10 @@ def load_animation(name: str, color: LEDBoard):
     color : LEDBoard
         The board on which the animation should be displayed.
     '''
-    with open('../static/animations/{}.json'.format(name)) as animation_file:
+    with open('server/static/animations/{}.json'.format(name)) as animation_file:
         animation = json.load(animation_file)
         light_controller.display_animation(
-            animation.frames, color, animation.fps, animation.looped, STOP_FLAG)
+            animation['frames'], color, animation['fps'], animation['looped'], STOP_FLAG)
 
 
 ### Routes ###
@@ -85,6 +85,9 @@ def change_lights():
 
     available_animations = [x.split('.')[0]
                             for x in os.listdir('server/static/animations/')]
+
+    if not (request.args.get('red') and request.args.get('yellow') and request.args.get('green')):
+        return "Missing arguments.", 400
 
     global LIGHTS_STATUS
     LIGHTS_STATUS['red'] = request.args.get('red')
