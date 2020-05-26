@@ -62,13 +62,13 @@ def animation():
     def compare(list1, list2):
         return collections.Counter(list1) == collections.Counter(list2)
 
-    if compare(['name', 'fps', 'looped', 'frames'], data.keys()):
-        return "Invalid animation json.", 400
+    if not compare(['name', 'fps', 'looped', 'frames'], data.keys()):
+        return 'Invalid animation JSON.', 400
 
-    with open('../static/animations/{}.json'.format(data['name']), 'w') as animation_file:
+    with open('server/static/animations/{}.json'.format(data['name']), 'w') as animation_file:
         json.dump(data, animation_file)
 
-    return "OK", 200
+    return 'OK', 200
 
 
 @traffic_light_blueprint.route('/traffic-light/change_lights', methods=['POST'])
@@ -84,7 +84,7 @@ def change_lights():
     STOP_FLAG = False
 
     available_animations = [x.split('.')[0]
-                            for x in os.listdir('static/animations/')]
+                            for x in os.listdir('server/static/animations/')]
 
     global LIGHTS_STATUS
     LIGHTS_STATUS['red'] = request.args.get('red')

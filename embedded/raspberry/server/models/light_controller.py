@@ -187,13 +187,13 @@ class LightController():
         # When it is all complete -> pulse the Latch so output is on parallel out
         self.__pulsePin(latch_pin)
 
-    def display_frame(self, frame: List[int, int], color: LEDBoard):
+    def display_frame(self, frame: List[List[int]], color: LEDBoard):
         '''
         Displays a given 2D frame on a given colored LED board.
 
         Parameters:
         -----------
-        frame : List[int, int]
+        frame : List[List[int]]
             2D frame with ROW_SIZE x ROW_SIZE to be displayed on the LED frame.
         color : LEDBoard
             LEDBoard enum entry.
@@ -235,7 +235,7 @@ class LightController():
 
     def display_animation(
             self,
-            animation: List[int, int, int],
+            animation: List[List[List[int]]],
             color: LEDBoard,
             fps: float,
             looped: bool,
@@ -246,7 +246,7 @@ class LightController():
 
         Parameters:
         -----------
-        frame : List[int, int, int]
+        frame : List[List[List[int]]]
             3D frame with FRAMES x ROW_SIZE x ROW_SIZE to be displayed on the LED frame.
         color : LEDBoard
             LEDBoard enum entry.
