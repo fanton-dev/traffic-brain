@@ -38,3 +38,31 @@ def test_status(test_client):
     assert ((data['red'] in anims or not data['red']) and
             (data['yellow'] in anims or not data['yellow']) and
             (data['green'] in anims or not data['green']))
+
+
+def test_live(test_client):
+    '''
+    GIVEN a Flask application
+    WHEN the '/information/live' route is requested (GET)
+    THEN check the response is valid
+
+    Parameters:
+    -----------
+    test_client
+        Flask test application.
+
+    Returns:
+    --------
+    None
+    '''
+
+    request = test_client.get('/information/live')
+
+    # Verifing response code
+    assert request.status_code == 200
+
+    # Verifing response data is a stream
+    assert request.is_streamed
+
+    # Verifing content type
+    assert request.content_type == 'multipart/x-mixed-replace; boundary=frame'
