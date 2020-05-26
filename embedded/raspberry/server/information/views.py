@@ -24,7 +24,7 @@ LIGHTS_STATUS = {"red": None, "yellow": None, "green": None}
 
 
 ### Routes ###
-@information_blueprint.route('/live', methods=['GET'])
+@information_blueprint.route('/information/live', methods=['GET'])
 def live():
     '''
     GET /live
@@ -36,7 +36,7 @@ def live():
     return Response(camera.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@information_blueprint.route('/status', methods=['GET'])
+@information_blueprint.route('/information/status', methods=['GET'])
 def status():
     '''
     GET /status
