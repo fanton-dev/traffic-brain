@@ -14,7 +14,24 @@ import time
 from typing import List
 from enum import Enum
 
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    class GPIO:
+        '''
+        Mock GPIO class for running the server on a non-Raspberry device.
+        '''
+        OUT = 'output'
+
+        @staticmethod
+        def setup(pin, mode):
+            '''Mock GPIO setup'''
+            print('[DEBUG] Setup pin {} to {}.'.format(pin, mode))
+
+        @staticmethod
+        def output(pin, state):
+            '''Mock GPIO output'''
+            print('[DEBUG] Output {} to pin {}.'.format(state, pin))
 
 LOW = 0
 HIGH = 1
