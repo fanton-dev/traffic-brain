@@ -22,6 +22,7 @@ except RuntimeError:
         Mock GPIO class for running the server on a non-Raspberry device.
         '''
         OUT = 'output'
+        BCM = 'GPIO numbering'
 
         @staticmethod
         def setup(pin, mode):
@@ -32,6 +33,14 @@ except RuntimeError:
         def output(pin, state):
             '''Mock GPIO output'''
             print('[DEBUG] Output {} to pin {}.'.format(state, pin))
+            
+        @staticmethod
+        def setmode(mode):
+            print('[DEBUG] Using {} mode.'.format(mode))
+            
+        @staticmethod
+        def cleanup():
+            print('[DEBUG] Cleaning up.')
 
 LOW = 0
 HIGH = 1
@@ -60,59 +69,61 @@ class LightController():
 
     Parameters:
     -----------
-    clock : int (default: 14)
+    clock : int (default: 26)
         GPIO pin to be used clock synchronization.
 
     Red Light:
-        data_bit_rx : int (default: 1)
+        data_bit_rx : int (default: 2)
             GPIO pin for pasing serial data to the rows controling shift register.
-        data_bit_rxl : int (default: 2)
+        data_bit_rxl : int (default: 3)
             GPIO pin for latch of the rows controling shift register.
 
-        data_bit_ry : int (default: 3)
+        data_bit_ry : int (default: 17)
             GPIO pin for pasing serial data to the columns controling shift register.
-        data_bit_ryl : int (default: 4)
+        data_bit_ryl : int (default: 27)
             GPIO pin for latch of the columns controling shift register.
 
     Yellow Light:
-        data_bit_rx : int (default: 5)
+        data_bit_rx : int (default: 10)
             GPIO pin for pasing serial data to the rows controling shift register.
-        data_bit_rxl : int (default: 6)
+        data_bit_rxl : int (default: 9)
             GPIO pin for latch of the rows controling shift register.
 
-        data_bit_ry : int (default: 7)
+        data_bit_ry : int (default: 5)
             GPIO pin for pasing serial data to the columns controling shift register.
-        data_bit_ryl : int (default: 8)
+        data_bit_ryl : int (default: 6)
             GPIO pin for latch of the columns controling shift register.
 
     Green Light:
-        data_bit_rx : int (default: 9)
+        data_bit_rx : int (default: 13)
             GPIO pin for pasing serial data to the rows controling shift register.
-        data_bit_rxl : int (default: 10)
+        data_bit_rxl : int (default: 19)
             GPIO pin for latch of the rows controling shift register.
 
-        data_bit_ry : int (default: 11)
+        data_bit_ry : int (default: 20)
             GPIO pin for pasing serial data to the columns controling shift register.
-        data_bit_ryl : int (default: 12)
+        data_bit_ryl : int (default: 21)
             GPIO pin for latch of the columns controling shift register.
     '''
 
     def __init__(
             self,
-            clock: int = 14,
-            data_bit_rx: int = 1,
-            data_bit_rxl: int = 2,
-            data_bit_ry: int = 3,
-            data_bit_ryl: int = 4,
-            data_bit_yx: int = 5,
-            data_bit_yxl: int = 6,
-            data_bit_yy: int = 7,
-            data_bit_yyl: int = 8,
-            data_bit_gx: int = 9,
-            data_bit_gxl: int = 10,
-            data_bit_gy: int = 11,
-            data_bit_gyl: int = 12,
+            clock: int = 26,
+            data_bit_rx: int = 2,
+            data_bit_rxl: int = 3,
+            data_bit_ry: int = 17,
+            data_bit_ryl: int = 27,
+            data_bit_yx: int = 10,
+            data_bit_yxl: int = 9,
+            data_bit_yy: int = 5,
+            data_bit_yyl: int = 6,
+            data_bit_gx: int = 13,
+            data_bit_gxl: int = 19,
+            data_bit_gy: int = 20,
+            data_bit_gyl: int = 21,
     ):
+        # Using GPIO pin numbering
+        GPIO.setmode(GPIO.BCM)
 
         # Storing pin numbers (X - rows, Y - columns, L - latch)
         self.clock = clock
@@ -151,6 +162,9 @@ class LightController():
         GPIO.output(self.data_bit_yyl, LOW)
         GPIO.output(self.data_bit_gxl, LOW)
         GPIO.output(self.data_bit_gyl, LOW)
+        
+    def __del__(self):
+        GPIO.cleanup()
 
     def __pulsePin(self, pin: int):
         '''
