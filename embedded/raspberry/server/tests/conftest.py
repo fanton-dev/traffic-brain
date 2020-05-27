@@ -1,5 +1,14 @@
+'''
+Module containing pretest fixtures.
+
+This module contains the following pretest fixtures:
+    - test_client
+        Starts a testing instance of the server.
+'''
+
 import pytest
 from server import create_app
+
 
 @pytest.fixture(scope='module')
 def test_client():

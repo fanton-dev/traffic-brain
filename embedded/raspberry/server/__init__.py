@@ -53,10 +53,7 @@ Usage:
 
 '''
 
-from flask import Flask, jsonify
-
-from server.models.camera import Camera
-from server.models.light_controller import LightController, LEDBoard
+from flask import Flask
 
 from server.traffic_light.views import traffic_light_blueprint
 from server.information.views import information_blueprint

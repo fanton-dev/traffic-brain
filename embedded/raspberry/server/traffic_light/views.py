@@ -13,7 +13,7 @@ Usage:
     app.register_blueprint(traffic_light_blueprint)
 '''
 
-### Imports ###
+# Imports
 import os
 import json
 import collections
@@ -24,13 +24,13 @@ from server.information.views import status
 from server.information.views import LIGHTS_STATUS
 
 
-### Config ###
+# Config
 traffic_light_blueprint = Blueprint('traffic-light', __name__)
 light_controller = LightController()
 STOP_FLAG = True
 
 
-### Helpers ###
+# Helpers
 def load_animation(name: str, color: LEDBoard):
     '''
     Loads an animation from a given name
@@ -49,7 +49,7 @@ def load_animation(name: str, color: LEDBoard):
             animation['frames'], color, animation['fps'], animation['looped'], STOP_FLAG)
 
 
-### Routes ###
+# Routes
 @traffic_light_blueprint.route('/traffic-light/animation', methods=['POST'])
 def animation():
     '''

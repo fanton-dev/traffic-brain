@@ -13,17 +13,17 @@ Usage:
     app.register_blueprint(information_blueprint)
 '''
 
-### Imports ###
+# Imports
 from flask import Response, Blueprint, jsonify
 from server.models.camera import Camera
 
 
-### Config ###
+# Config
 information_blueprint = Blueprint('information', __name__)
 LIGHTS_STATUS = {"red": None, "yellow": None, "green": None}
 
 
-### Routes ###
+# Routes
 @information_blueprint.route('/information/live', methods=['GET'])
 def live():
     '''
