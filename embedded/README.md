@@ -43,6 +43,7 @@ The following setup has been testet on the `Raspberry Pi 3` with `Raspbian Buste
 Make sure Python 3.7 is installed. Then run the following:
 ```
 # Install dependencies
+$ sudo apt install python3-opencv
 $ python3.7 -m pip install pip
 $ pip3 install -r requirements.txt
 
