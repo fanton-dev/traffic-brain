@@ -1,19 +1,28 @@
-import flask
-import json
-from camera import Camera
+#!/usr/bin/env python
+'''
+Embedded traffic light Flask server.
 
-app = flask.Flask(__name__)
+This script will start a Flask server containing handlers for the following paths:
+    - GET /live
+        Returns a stream from a .jpg generator using the Raspberry camera.
 
+    - GET /status
+        Returns the current status of the traffic light.
 
-@app.route('/camera')
-def video_feed():
-    return flask.Response(Camera().gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    - POST /animation
+        Stores a new submitted animation json file.
 
+    - POST /change_lights
+        Sets the traffic lights to display certain passed animations.
 
-@app.route('/status', methods=['GET'])
-def status():
-    pass
+Usage:
+    The server could be started by running::
 
+        $ flask run
+'''
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+from server import create_app
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run(host='0.0.0.0', debug=True)
