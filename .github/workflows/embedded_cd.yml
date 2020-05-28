@@ -16,16 +16,16 @@ jobs:
     steps:
       - name: Setup Subversion
         run: |
-          sudo apt-get install subversion -y
+          apt-get install subversion -y
 
       - name: Update embedded server code from repository
         run: |
-          sudo svn export https://github.com/braind3d/traffic-brain/trunk/embedded/raspberry $EMBEDDED_DEPLOYMENT_PATH --force
+          svn export https://github.com/braind3d/traffic-brain/trunk/embedded/raspberry $EMBEDDED_DEPLOYMENT_PATH --force
 
       - name: Installing missing dependencies
         run: |
-          sudo pip3 install -r traffic-brain/requirements.txt
+          pip3 install -r traffic-brain/requirements.txt
 
       - name: Scheduling reboot
         run: |
-          sudo shutdown -r 1
+          shutdown -r 1
