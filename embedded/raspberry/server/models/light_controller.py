@@ -69,9 +69,6 @@ class LightController():
 
     Parameters:
     -----------
-    clock : int (default: 26)
-        GPIO pin to be used clock synchronization.
-
     Red Light:
         data_bit_rx : int (default: 2)
             GPIO pin for pasing serial data to the rows controling shift register.
@@ -108,7 +105,6 @@ class LightController():
 
     def __init__(
             self,
-            clock: int = 26,
             data_bit_rx: int = 2,
             data_bit_rxl: int = 3,
             data_bit_ry: int = 17,
@@ -126,7 +122,6 @@ class LightController():
         GPIO.setmode(GPIO.BCM)
 
         # Storing pin numbers (X - rows, Y - columns, L - latch)
-        self.clock = clock
         self.data_bit_rx = data_bit_rx
         self.data_bit_rxl = data_bit_rxl
         self.data_bit_ry = data_bit_ry
@@ -141,7 +136,6 @@ class LightController():
         self.data_bit_gyl = data_bit_gyl
 
         # Setup IO
-        GPIO.setup(self.clock, GPIO.OUT)
         GPIO.setup(self.data_bit_rx, GPIO.OUT)
         GPIO.setup(self.data_bit_rxl, GPIO.OUT)
         GPIO.setup(self.data_bit_ry, GPIO.OUT)
@@ -155,7 +149,6 @@ class LightController():
         GPIO.setup(self.data_bit_gy, GPIO.OUT)
         GPIO.setup(self.data_bit_gyl, GPIO.OUT)
 
-        GPIO.output(self.clock, LOW)
         GPIO.output(self.data_bit_rxl, LOW)
         GPIO.output(self.data_bit_ryl, LOW)
         GPIO.output(self.data_bit_yxl, LOW)
@@ -210,13 +203,10 @@ class LightController():
                 GPIO.output(data_pin, LOW)
 
             # Pulse the Clock -> switch to next bit of serial input
-            self.__pulsePin(self.clock)
+            self.__pulsePin(latch_pin)
 
             # Shift the value with 1 bit in order to get the next bit to push
             value = value << 0x0001
-
-        # When it is all complete -> pulse the Latch so output is on parallel out
-        self.__pulsePin(latch_pin)
 
     def display_frame(self, frame: List[List[int]], color: LEDBoard):
         '''

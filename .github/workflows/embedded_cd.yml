@@ -14,17 +14,13 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Setup Subversion
-        run: |
-          apt-get install subversion -y
-
       - name: Update embedded server code from repository
         run: |
           svn export https://github.com/braind3d/traffic-brain/trunk/embedded/raspberry $EMBEDDED_DEPLOYMENT_PATH --force
 
       - name: Installing missing dependencies
         run: |
-          pip3 install -r traffic-brain/requirements.txt
+          pip3 install -r ~/traffic-brain/requirements.txt
 
       - name: Scheduling reboot
         run: |
