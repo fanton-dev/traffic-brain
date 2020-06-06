@@ -3,8 +3,11 @@ package com.brainded.trafficlight;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class ImageResizer {
 
@@ -18,7 +21,7 @@ public class ImageResizer {
      * @param inputImagePath  Path of the original image
      * @throws IOException
      */
-    public static int[][][] resize(String inputImagePath)
+    public static double[][][] resize(String inputImagePath)
             throws IOException {
 
         // reads input image
@@ -35,18 +38,24 @@ public class ImageResizer {
         g2d.dispose();
 
 
-        int[][][] img = new int[512][512][3];
+        double[][][] img = new double[512][512][3];
 
         for (int i = 0; i < 512; ++i) {
             for (int j = 0; j < 512; ++j) {
                 Color pixelColor = new Color(outputImage.getRGB(i, j));
 
-                img[i][j][0] = pixelColor.getRed() / 255;
-                img[i][j][1] = pixelColor.getGreen() / 255;
-                img[i][j][2] = pixelColor.getBlue() / 255;
+                img[i][j][0] = pixelColor.getRed() / 255.0;
+                img[i][j][1] = pixelColor.getGreen() / 255.0;
+                img[i][j][2] = pixelColor.getBlue() / 255.0;
             }
         }
 
+        System.out.println(Arrays.deepToString(img));
+        BufferedWriter outputWriter = null;
+        outputWriter = new BufferedWriter(new FileWriter("ImageNum2")); //NAME OF NEW FILE
+        outputWriter.write(Arrays.deepToString(img));
+        outputWriter.flush();
+        outputWriter.close();
         return img;
     }
 }

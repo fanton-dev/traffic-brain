@@ -11,6 +11,9 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
+import java.awt.*;
+import java.io.IOException;
+
 //@Configuration
 //@EnableAutoConfiguration
 //@ComponentScan
@@ -22,8 +25,10 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties({StorageProperties.class})
 public class TrafficlightApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(TrafficlightApplication.class, args);
+    public static void main(String[] args) throws IOException {
+        ImageResizer.resize("/home/bogdan8/Desktop/DataTest.jpg"); //LOCATION OF IMG
+
+//        SpringApplication.run(TrafficlightApplication.class, args);
     }
 
     @Bean
