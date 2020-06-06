@@ -1,4 +1,5 @@
 import os
+import math
 import xml.etree.ElementTree
 from typing import Tuple
 
@@ -9,7 +10,7 @@ import imgaug as ia
 
 class DataGenerator():
     @staticmethod
-    def parse_annotations(annotation_folder: str, image_folder: str, labels: list):
+    def __parse_annotations(annotation_folder: str, image_folder: str, labels: list):
         '''
         Extracts bounding box information from PASCAL VOC .xml annotation files.
 
@@ -31,6 +32,7 @@ class DataGenerator():
                 Annotations every image (shape : image count, max annotation count, 5) with
                 annotations in format xmin, ymin, xmax, ymax, class.
         '''
+
         max_annotations = 0
         image_names = []
         annotations = []
@@ -48,26 +50,33 @@ class DataGenerator():
                 if 'height' in element.tag:
                     height = int(element.text)
                 if 'object' in element.tag:
-                    bbox = np.zeros((5))
+                    bbox = np.zeros((5 + len(labels)))
                     annotation_count += 1
 
                     # This try-except is used for checking if the object name is within classes
                     try:
-                        bbox[4] = labels.index(element.find('name').text) + 1
+                        bbox[5 + labels.index(element.find('name').text)] = 1.0
+                        bbox[4] = 1.0
                     except ValueError:
                         object_bboxes.append(np.asarray(bbox))
                         continue
                     for attr in list(element):
                         if 'bndbox' in attr.tag:
+                            xmin, ymin, xmax, ymax = 0, 0, 0, 0
                             for dim in list(attr):
                                 if 'xmin' in dim.tag:
-                                    bbox[0] = int(dim.text) / width
+                                    xmin = float(dim.text) / width
                                 if 'ymin' in dim.tag:
-                                    bbox[1] = int(dim.text) / height
+                                    ymin = float(dim.text) / height
                                 if 'xmax' in dim.tag:
-                                    bbox[2] = int(dim.text) / width
+                                    xmax = float(dim.text) / width
                                 if 'ymax' in dim.tag:
-                                    bbox[3] = int(dim.text) / height
+                                    ymax = float(dim.text) / height
+
+                            bbox[0] = (xmin + xmax) / 2
+                            bbox[1] = (ymin + ymax) / 2
+                            bbox[2] = xmax - xmin
+                            bbox[3] = ymax - ymin
                     object_bboxes.append(np.asarray(bbox))
             annotations.append(np.asarray(object_bboxes))
 
@@ -77,20 +86,57 @@ class DataGenerator():
 
         # Converting both lists to nparrays
         image_names = np.array(image_names)
-        image_bboxes = np.zeros((image_names.shape[0], max_annotations, 5))
+        image_bboxes = np.zeros(
+            (image_names.shape[0], max_annotations, (5 + len(labels))))
 
         # Reshaping image_bboxes
         for idx, bboxes in enumerate(annotations):
-            image_bboxes[idx, :bboxes.shape[0], :5] = bboxes
+            image_bboxes[idx, :bboxes.shape[0], :(5 + len(labels))] = bboxes
 
         return image_names, image_bboxes
+
+    @staticmethod
+    def __distribute_in_grid(
+            annotation_folder: str,
+            image_folder: str,
+            labels: list,
+            boxes: int,
+            grid_size: Tuple[int, int]
+    ):
+
+        image_names, image_bboxes = DataGenerator.__parse_annotations(
+            annotation_folder, image_folder, labels)
+
+        def round_down(number, decimals=0):
+            multiplier = 10 ** decimals
+            return math.floor(number * multiplier) / multiplier
+
+        new_image_bboxes = np.zeros(
+            (image_bboxes.shape[0], grid_size[0], grid_size[1], boxes, 5 + len(labels)))
+        for i, image in enumerate(image_bboxes):
+            if i == 4:
+                break
+            for bbox in image:
+                if bbox[2] and bbox[3]:
+                    current_x_cell = int(round_down(
+                        bbox[0] / (1 / grid_size[0])))
+                    current_y_cell = int(round_down(
+                        bbox[1] / (1 / grid_size[1])))
+                    bbox[0] = bbox[0] % (1 / grid_size[0])
+                    bbox[1] = bbox[1] % (1 / grid_size[1])
+
+                    new_image_bboxes[i][current_x_cell][current_y_cell][0] = bbox
+
+        return image_names, new_image_bboxes
 
     @staticmethod
     def generate_tf_dataset(
             annotation_folder: str,
             image_folder: str,
             labels: list,
+            boxes: int,
             batch_size: int,
+            grid_size: Tuple[int, int],
             image_size: Tuple[int, int]):
         '''
         Creates a Tensorflow compatable dataset from YOLO images and annotations
@@ -112,11 +158,11 @@ class DataGenerator():
         batch : tuple
             (images, annotations)
                 batch[0] : images : tensor (shape : batch_size, IMAGE_W, IMAGE_H, 3)
-                batch[1] : annotations : tensor (shape : batch_size, max annot, 5)
+                batch[1] : annotations : tensor (shape : batch_size, max annot, 5 + C)
         '''
         # Parsing annotations
-        image_names, image_bboxes = DataGenerator.parse_annotations(
-            annotation_folder, image_folder, labels)
+        image_names, image_bboxes = DataGenerator.__distribute_in_grid(
+            annotation_folder, image_folder, labels, boxes, grid_size)
 
         # Creating a TF dataset from the parsed annotations nparrays
         tf_dataset = tf.data.Dataset.from_tensor_slices(
@@ -138,8 +184,8 @@ class DataGenerator():
                             tf.io.read_file(image_object),
                             channels=3),
                         tf.float32),
-                    [tf.cast(image_size[0], tf.int32), tf.cast(image_size[1], tf.int32)]),
-                list(image_size)),
+                    [tf.cast(image_size[0], tf.float32), tf.cast(image_size[1], tf.float32)]),
+                tf.cast(image_bboxes, tf.float32)),
             num_parallel_calls=6)
 
         # Batching (grouping) togheter a given number images for training
@@ -206,30 +252,45 @@ class DataGenerator():
 
             # Converting Tensor dataset to Numpy array
             img = batch[0].numpy()
-            bboxes = batch[1]. numpy()
+            bboxes = batch[1].numpy()
 
             # Converting the bbox numpy to an image augmentation object
+            # TODO - Stylize code
             ia_boxes = []
-            for i in range(img.shape[0]):
-                ia_boxes.append(ia.BoundingBoxesOnImage(
-                    [ia.BoundingBox(x1=bb[0], y1=bb[1], x2=bb[2], y2=bb[3])
-                     for bb in bboxes[i] if bb[0] + bb[1] + bb[2] + bb[3] > 0],
-                    shape=image_shape))
+            for i in range(bboxes.shape[0]):
+                ia_boxes.append([])
+                for j in range(bboxes.shape[1]):
+                    ia_boxes[i].append([])
+                    for k in range(bboxes.shape[2]):
+                        ia_boxes[i][j].append(ia.BoundingBoxesOnImage(
+                            [ia.BoundingBox(
+                                x1=bbox[0] - 0.5*bbox[2],
+                                y1=bbox[1] - 0.5*bbox[3],
+                                x2=bbox[0] + 0.5*bbox[2],
+                                y2=bbox[1] + 0.5*bbox[3])
+                            for bbox in bboxes[i][j][k] if bbox[0] + bbox[1] + bbox[2] + bbox[3] > 0],
+                            shape=image_shape))
 
             # Performing dataset augmentation
             seq_det = sequence.to_deterministic()
             img_aug = np.clip(seq_det.augment_images(img), 0, 1)
-            boxes_aug = seq_det.augment_bounding_boxes(ia_boxes)
+            boxes_aug = []
+            for i in range(len(ia_boxes)):
+                for j in range(len(ia_boxes[i])):
+                    for k in range(len(ia_boxes[i][j])):
+                        boxes_aug.append(seq_det.augment_bounding_boxes(ia_boxes[i][j][k]))
 
             # Converting the image augmentation object back to a numpy array
-            for i in range(img.shape[0]):
-                boxes_aug[i] = boxes_aug[i].remove_out_of_image(
-                ).clip_out_of_image()
-                for j, bbox in enumerate(boxes_aug[i].bounding_boxes):
-                    bboxes[i, j, 0] = bbox.x1
-                    bboxes[i, j, 1] = bbox.y1
-                    bboxes[i, j, 2] = bbox.x2
-                    bboxes[i, j, 3] = bbox.y2
+            for i in range(bboxes.shape[0]):
+                for j in range(bboxes.shape[1]):
+                    for k in range(bboxes.shape[2]):
+                        boxes_aug[i][j][k] = boxes_aug[i][j][k].remove_out_of_image(
+                        ).clip_out_of_image()
+                        for l, bbox in enumerate(boxes_aug[k].bounding_boxes):
+                            bboxes[i, j, k, l, 0] = bbox.x1
+                            bboxes[i, j, k, l, 1] = bbox.y1
+                            bboxes[i, j, k, l, 2] = bbox.x2
+                            bboxes[i, j, k, l, 3] = bbox.y2
 
             # Converting Numpy array to Tensor dataset and returning it
             yield (
