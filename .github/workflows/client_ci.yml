@@ -89,27 +89,3 @@ jobs:
       - name: Run E2E tests
         working-directory: client/
         run: npm run e2e
-
-  electron-test:
-    name: Run Electron tests
-    needs: [lint, ng-build, ng-test]
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
-
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.8
-
-      - name: Build/Release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          package_root: "client/"
