@@ -318,3 +318,11 @@ classification/data/*
 !classification/data/README.md
 .vscode
 env
+
+### Adobe ###
+# Adobe Source Files
+*.psd
+*.ai
+*.indd
+*.prproj
+Adobe After Effects Auto-Save
