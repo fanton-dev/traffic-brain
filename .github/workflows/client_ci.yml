@@ -36,11 +36,12 @@ jobs:
 
   ng-build:
     name: Angular build
+    needs: [lint]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Check out Git repository
@@ -61,11 +62,12 @@ jobs:
 
   ng-test:
     name: Run Angular tests
+    needs: [lint, ng-build]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Check out Git repository
@@ -82,19 +84,20 @@ jobs:
 
       - name: Run tests
         working-directory: client/
-        run: npm test -- --configuration=ci
+        run: npm test
 
       - name: Run E2E tests
         working-directory: client/
-        run: npm run e2e -- --configuration=ci
+        run: npm run e2e
 
   electron-test:
     name: Run Electron tests
+    needs: [lint, ng-build, ng-test]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Check out Git repository
