@@ -1,0 +1,5 @@
+<agm-map [zoom]="zoom" [latitude]="latitude" [longitude]="longitude" [styles]="styles" [disableDefaultUI]="true">
+    <agm-marker *ngFor="let pool of traffic_light_pool; let i = index" [latitude]="pool.latitude"
+        [longitude]="pool.longitude" [label]="{color: 'white', text: pool.traffic_light_count}">
+    </agm-marker>
+</agm-map>
