@@ -36,11 +36,12 @@ jobs:
 
   ng-build:
     name: Angular build
+    needs: [lint]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Check out Git repository
@@ -61,11 +62,12 @@ jobs:
 
   ng-test:
     name: Run Angular tests
+    needs: [lint, ng-build]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Check out Git repository
@@ -82,31 +84,8 @@ jobs:
 
       - name: Run tests
         working-directory: client/
-        run: npm test -- --configuration=ci
+        run: npm test
 
       - name: Run E2E tests
         working-directory: client/
-        run: npm run e2e -- --configuration=ci
-
-  electron-test:
-    name: Run Electron tests
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
-
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.8
-
-      - name: Build/Release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          package_root: "client/"
+        run: npm run e2e

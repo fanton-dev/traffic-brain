@@ -9,7 +9,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "electron": "ng build --base-href ./ && tsc --p electron && electron ."
+    "electron": "ng build --base-href ./ && tsc --p electron && electron .",
+    "electron-build": "ng build --base-href ./ && tsc --p electron"
   },
   "private": true,
   "dependencies": {
@@ -38,7 +39,7 @@
     "electron": "^6.0.12",
     "jasmine-core": "~3.4.0",
     "jasmine-spec-reporter": "~4.2.1",
-    "karma": "~4.1.0",
+    "karma": "^4.4.1",
     "karma-chrome-launcher": "~2.2.0",
     "karma-coverage-istanbul-reporter": "~2.0.1",
     "karma-jasmine": "~2.0.1",
