@@ -1,3 +1,8 @@
-traffic-map {
+.traffic-map {
     height: 100%;
+}
+
+.navbar {
+    position: fixed;
+    z-index: 2;
 }
