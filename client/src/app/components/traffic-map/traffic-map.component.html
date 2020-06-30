@@ -1,5 +1,11 @@
-<agm-map [zoom]="zoom" [latitude]="latitude" [longitude]="longitude" [styles]="styles" [disableDefaultUI]="true">
-    <agm-marker *ngFor="let pool of traffic_light_pool; let i = index" [latitude]="pool.latitude"
-        [longitude]="pool.longitude" [label]="{color: 'white', text: pool.traffic_light_count}">
-    </agm-marker>
-</agm-map>
+<mat-drawer-container class="drawer-container" [hasBackdrop]="false" autosize>
+    <mat-drawer #drawer class="drawer" mode="over" position="end">
+        <fa-icon class="drawer-close" [icon]="fa.close" size="lg" (click)="drawer.close()" mat-raised-button></fa-icon>
+        <drawer-view class="drawer-view" [traffic_light_pool]="traffic_light_pools[current_drawer_pool]"></drawer-view>
+    </mat-drawer>
+    <agm-map class="agm-map" [zoom]="zoom" [latitude]="latitude" [longitude]="longitude" [styles]="styles" [disableDefaultUI]="true" (mapClick)="drawer.close()">
+        <agm-marker class="agm-marker" *ngFor="let pool of traffic_light_pools; let i = index" [latitude]="pool.latitude"
+            [longitude]="pool.longitude" [label]="{color: 'white', text: pool.traffic_light_count}" mat-button (markerClick)="current_drawer_pool = i; drawer.open()">
+        </agm-marker>
+    </agm-map>
+</mat-drawer-container>

@@ -1,0 +1,37 @@
+.camera-live {
+    display: block;
+    height: 25vh;
+    min-width: 100px;
+    margin: 1rem auto;
+
+    box-shadow: 0 8px 10px -5px rgba(0, 0, 0, 0.2), 0 16px 24px 2px rgba(0, 0, 0, 0.14),
+        0 6px 30px 5px rgba(0, 0, 0, 0.12);
+}
+
+.camera-select {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.camera-select-option:nth-child(1n) {
+    text-align: end;
+}
+
+.camera-select-option:nth-child(2n) {
+    text-align: start;
+}
+
+.camera-select-option {
+    display: inline-block;
+    margin: 0.25rem;
+
+    cursor: pointer;
+}
+
+.camera-select-circle {
+    vertical-align: middle;
+}
+
+.camera-select-ip {
+    vertical-align: middle;
+}

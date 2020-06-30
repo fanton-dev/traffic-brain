@@ -1,0 +1,35 @@
+.drawer-view {
+    height: 100%;
+}
+
+.drawer-image {
+    width: 100%;
+    height: 40vh;
+    object-fit: cover;
+}
+
+.drawer-information {
+    margin: 1rem;
+}
+
+.drawer-title {
+    margin-bottom: 1rem;
+}
+
+.drawer-title h2 {
+    margin: 0;
+    margin-bottom: 0.5rem;
+}
+
+:host ::ng-deep .inputs-group {
+    width: 100%;
+    display: grid;
+}
+
+:host ::ng-deep .inputs-group > * {
+    margin: 0.5rem;
+}
+
+:host ::ng-deep .inputs-group > mat-button-toggle {
+    margin: 0;
+}

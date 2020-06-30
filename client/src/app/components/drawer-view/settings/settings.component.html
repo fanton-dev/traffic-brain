@@ -1,0 +1,36 @@
+<form [formGroup]="information_options">
+    <mat-card>
+        <p>Operation Mode</p>
+        <mat-button-toggle-group class="inputs-group settings-mode-toggle" [formControl]="poolModeControl">
+            <mat-button-toggle value="off">Off</mat-button-toggle>
+            <mat-button-toggle value="manual">Manual</mat-button-toggle>
+            <mat-button-toggle value="automatic">Automatic</mat-button-toggle>
+        </mat-button-toggle-group>
+    </mat-card>
+    <mat-card>
+        <p>Information</p>
+        <div class="settings-information inputs-group">
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input matInput [formControl]="poolNameControl">
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>Type</mat-label>
+                <mat-select [formControl]="poolTypeControl">
+                    <mat-option value="4">4-way intersection</mat-option>
+                    <mat-option value="6">6-way intersection</mat-option>
+                    <mat-option value="8">8-way intersection</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </mat-card>
+    <mat-card>
+        <p>Traffic Lights</p>
+        <div class="settings-camera-ips inputs-group">
+            <mat-form-field *ngFor="let traffic_light of traffic_light_pool.traffic_lights; let i = index">
+                <mat-label>Traffic Light {{ i + 1 }} IP</mat-label>
+                <input matInput [formControl]="poolTrafficLightIPs[i]">
+            </mat-form-field>
+        </div>
+    </mat-card>
+</form>

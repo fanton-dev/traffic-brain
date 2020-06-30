@@ -1,0 +1,10 @@
+<img class="camera-live" [src]="'http://' + current_camera_ip + '/information/live' || default_camera_url">
+<div class="camera-select">
+    <div class="camera-select-option" *ngFor="let traffic_light of traffic_light_pool.traffic_lights; let i = index"
+        (click)="current_camera_ip = traffic_light.ip">
+        <svg class="camera-select-circle" height="25" width="25">
+            <circle cx="12.5" cy="12.5" r="7.5" stroke="blue" stroke-width="2" fill="darkblue" />
+        </svg>
+        <span class="camera-select-ip">{{ traffic_light.ip }} ({{ i + 1 }})</span>
+    </div>
+</div>

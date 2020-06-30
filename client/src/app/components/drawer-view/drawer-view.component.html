@@ -1,0 +1,25 @@
+<div class="drawer-view">
+    <img class="drawer-image"
+        src="https://maps.googleapis.com/maps/api/streetview?size=800x800&location={{ traffic_light_pool.latitude }},{{ traffic_light_pool.longitude }}&fov=90&heading=70&pitch=0&key={{ google_maps_api_key }}"
+        alt="">
+
+    <div class="drawer-information">
+        <div class="drawer-title">
+            <h2>{{ traffic_light_pool.name }}</h2>
+            <span>{{ traffic_light_pool.traffic_light_count }}-way intersection</span>
+        </div>
+        <div class="drawer-tabs" mat-align-tabs="center">
+            <mat-tab-group class="drawer-tab-group">
+                <mat-tab class="drawer-tab" label="Cameras">
+                    <drawer-cameras [traffic_light_pool]="traffic_light_pool"></drawer-cameras>
+                </mat-tab>
+                <mat-tab class="drawer-tab" label="Statistics">
+                    <drawer-statistics [traffic_light_pool]="traffic_light_pool"></drawer-statistics>
+                </mat-tab>
+                <mat-tab class="drawer-tab" label="Settings">
+                    <drawer-settings [traffic_light_pool]="traffic_light_pool"></drawer-settings>
+                </mat-tab>
+            </mat-tab-group>
+        </div>
+    </div>
+</div>

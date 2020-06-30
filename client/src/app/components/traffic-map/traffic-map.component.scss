@@ -1,3 +1,45 @@
 agm-map {
     height: 100vh;
 }
+
+.drawer {
+    padding: 0px;
+    width: 35vw;
+    height: 100vh;
+}
+
+.drawer-view {
+    z-index: 1;
+}
+
+.drawer-close {
+    display: inline-block;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+
+    color: white;
+    cursor: pointer;
+}
+
+// Small screen
+@media only screen and (max-width: 786px) {
+    .drawer {
+        width: 100vw;
+    }
+}
+
+// Medium
+@media only screen and (min-width: 786px) and (max-width: 1200px) {
+    .drawer {
+        width: 50vw;
+    }
+}
+
+// Large screen
+@media only screen and (min-width: 1200px) {
+    .drawer {
+        width: 30vw;
+    }
+}

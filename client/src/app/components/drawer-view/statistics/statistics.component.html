@@ -1,0 +1,26 @@
+<div class="inputs-group statistics-datepicker-group">
+    <mat-form-field class="statistics-datepicker">
+        <mat-label>Start date</mat-label>
+        <input matInput [matDatepicker]="start_picker">
+        <mat-datepicker-toggle matSuffix [for]="start_picker"></mat-datepicker-toggle>
+        <mat-datepicker #start_picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field class="statistics-datepicker">
+        <mat-label>End date</mat-label>
+        <input matInput [matDatepicker]="end_picker">
+        <mat-datepicker-toggle matSuffix [for]="end_picker"></mat-datepicker-toggle>
+        <mat-datepicker #end_picker></mat-datepicker>
+    </mat-form-field>
+</div>
+
+<div>
+    <div>
+        <div style="display: block">
+            <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
+                [plugins]="barChartPlugins" [legend]="barChartLegend" [chartType]="barChartType">
+            </canvas>
+        </div>
+        <button mat-button mat-raised-button color="primary" (click)="randomize()">Update</button>
+    </div>
+</div>
