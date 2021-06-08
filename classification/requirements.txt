@@ -1,6 +1,6 @@
 pip==20.0.2
 jupyter==1.0.0
-pillow==7.0.0
+pillow==8.2.0
 tensorflow-gpu==2.1.0
 numpy==1.18.2
 matplotlib==3.2.1
